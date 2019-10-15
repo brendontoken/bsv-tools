@@ -2,16 +2,21 @@
 <html>
   <head>
     <title>BSV Tools</title>
+    <link rel="stylesheet" type="text/css" href="styles/tools.css">
     <script src="js/bsv.min.js"></script>
   </head>
   <body>
     <h1>BSV Tools</h1>
-    <h2>Reverse Hex</h2>
-    <input id="reverse" type="text" size="50"/>
-    <p id="reversed"></p>
-    <h2>Address from Public Key Hash (Locking Script)</h2>
-    <input id="pkhash" type="text" size="50"/>
-    <p id="address-from-pkhash"></p>
+    <div class="tool">
+      <h2>Reverse Hex</h2>
+      <input id="reverse" type="text" size="50"/>
+      <p id="reversed"></p>
+    </div>
+    <div class="tool">
+      <h2>Address from Public Key Hash (Locking Script)</h2>
+      <input id="pkhash" type="text" size="50"/>
+      <p id="address-from-pkhash"></p>
+    </div>
     <script src="js/tools.js"></script>
   </body>
 </html>

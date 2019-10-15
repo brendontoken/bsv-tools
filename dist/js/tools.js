@@ -34,7 +34,7 @@ publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInpu
     console.log("b", b);
     addressFromPublicKeyHashElement.innerText = addr;
   } else {
-    addressFromPublicKeyHashElement.innerText = "Input is not 40 characters."
+    addressFromPublicKeyHashElement.innerText = `Input is not 40 characters. (${content.length})`;
   }
 });
 
@@ -45,7 +45,7 @@ reverseInputElement.addEventListener("input", function onReverseInput(event) {
     const reversed = reverseHex(content);
     reversedOutputElement.innerText = reversed;
   } else {
-    reversedOutputElement.innerText = "Input is not an even number of characters.";
+    reversedOutputElement.innerText = `Input is not an even number of characters. (${content.length})`;
   }
 });
 
