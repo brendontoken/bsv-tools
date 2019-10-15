@@ -23,15 +23,8 @@ publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInpu
   const content = event.target.value;
   if (content.length === 40) {
     console.log("bsv:", bsv);
-    const prefixed = "00" + content;
-    console.log(`Prefixed: ${prefixed}`);
-    const prefixedBuf = bsv.util.buffer.hexToBuffer(prefixed);
     const b = bsv.encoding.Base58Check.fromHex(prefixed);
-    //const b = b58ch.fromBuffer(prefixedBuf);
     const addr = b.toString();
-    console.log("prefixed:", prefixed);
-    console.log("prefixedBuf:", bsv.util.buffer.bufferToHex(prefixedBuf));
-    console.log("b", b);
     addressFromPublicKeyHashElement.innerText = addr;
   } else {
     addressFromPublicKeyHashElement.innerText = `Input is not 40 characters. (${content.length})`;
