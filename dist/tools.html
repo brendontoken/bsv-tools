@@ -1,13 +1,17 @@
 <!doctype html>
 <html>
   <head>
-    <title>Tools</title>
+    <title>BSV Tools</title>
+    <script src="js/bsv.min.js"></script>
   </head>
   <body>
     <h1>BSV Tools</h1>
     <h2>Reverse Hex</h2>
-    <input id="reverse" type="text" size="40"/>
+    <input id="reverse" type="text" size="50"/>
     <p id="reversed"></p>
+    <h2>Address from Public Key Hash (Locking Script)</h2>
+    <input id="pkhash" type="text" size="50"/>
+    <p id="address-from-pkhash"></p>
     <script src="js/tools.js"></script>
   </body>
 </html>
