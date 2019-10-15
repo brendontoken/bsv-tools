@@ -23,6 +23,7 @@ publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInpu
   const content = event.target.value;
   if (content.length === 40) {
     console.log("bsv:", bsv);
+    const prefixed = "00" + content;
     const b = bsv.encoding.Base58Check.fromHex(prefixed);
     const addr = b.toString();
     addressFromPublicKeyHashElement.innerText = addr;
@@ -33,7 +34,6 @@ publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInpu
 
 reverseInputElement.addEventListener("input", function onReverseInput(event) {
   const content = event.target.value;
-  console.log("On reverse input.", content);
   if (content.length % 2 === 0) {
     const reversed = reverseHex(content);
     reversedOutputElement.innerText = reversed;
