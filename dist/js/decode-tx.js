@@ -29,10 +29,9 @@ function addDecodedRow(txPortion, decoded, showTopSeparator, isAHeading) {
 }
 
 function clearDecodedResults() {
-  const children = txDecodedElement.childNodes;
-  children.forEach(function onChild(child) {
-    txDecodedElement.removeChild(child);
-  });
+  while (txDecodedElement.firstChild) {
+    txDecodedElement.removeChild(txDecodedElement.firstChild)
+  }
 }
 
 function decodeLockingScript(hex) {
