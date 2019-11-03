@@ -1,4 +1,6 @@
 const addressFromPublicKeyHashElement = document.getElementById('address-from-pkhash');
+const base58CheckFromHexInputElement = document.getElementById('base58check-hex');
+const base58CheckFromHexOutputElement = document.getElementById('base58check-from-hex');
 const publicKeyHashInputElement = document.getElementById('pkhash');
 const reversedOutputElement = document.getElementById('reversed');
 const reverseInputElement = document.getElementById('reverse');
@@ -18,6 +20,17 @@ function reverseHex(hex) {
   const reversed = bytes.join("");
   return reversed;
 }
+
+base58CheckFromHexInputElement.addEventListener("input", function onBase58CheckInput(event) {
+  const content = event.target.value;
+  try {
+    const b = bsv.encoding.Base58Check.fromHex(content);
+    const encoded = b.toString();
+    base58CheckFromHexOutputElement.innerText = encoded;
+  } catch (e) {
+    base58CheckFromHexOutputElement.innerText = "Error: " + e;
+  }
+});
 
 publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInput(event) {
   const content = event.target.value;
