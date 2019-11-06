@@ -1,6 +1,7 @@
 "use strict";
 const sampleButton = document.getElementById('sample');
 const txDecodedElement = document.getElementById('tx-decoded');
+const txIdElement = document.getElementById('tx-id');
 const txInputElement = document.getElementById('tx-input');
 
 const b58ch = bsv.encoding.Base58Check;
@@ -45,6 +46,7 @@ function addDecodedRow(txPortion, decoded, options) {
 }
 
 function clearDecodedResults() {
+  txIdElement.innerHTML = "";
   while (txDecodedElement.firstChild) {
     txDecodedElement.removeChild(txDecodedElement.firstChild)
   }
@@ -82,6 +84,14 @@ function decodeHexToString(hex) {
 
 function decodeTx(tx) {
   clearDecodedResults();
+
+  const txBuf = bsv.util.buffer.hexToBuffer(tx);
+  const txHash = bsv.crypto.Hash.sha256sha256(txBuf);
+  const txidBuf = bsv.util.buffer.reverse(txHash);
+  const txid = txidBuf.toString('hex');
+  console.log("txid:", txid);
+  txIdElement.innerHTML = `<a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`
+
   const nVersionRaw = tx.slice(0, 8);
   console.log(`${nVersionRaw}          nVersion`);
   addDecodedRow(`${nVersionRaw}`, "nVersion");
