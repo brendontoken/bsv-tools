@@ -109,7 +109,7 @@ function decodeTx(tx) {
     const txidRaw = tx.slice(cursor, cursor + 64);
     const txid = reverseHex(txidRaw);
     console.log(`${txidRaw}  txid: ${txid}`)
-    addDecodedRow(`${txidRaw}`, `txid: ${txid}`);
+    addDecodedRow(`${txidRaw}`, `txid: <a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`);
     cursor += 64;
   
     const indexRaw = tx.slice(cursor, cursor + 8);
