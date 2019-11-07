@@ -49,7 +49,12 @@ reverseInputElement.addEventListener("input", function onReverseInput(event) {
   const content = event.target.value;
   if (content.length % 2 === 0) {
     const reversed = reverseHex(content);
-    reversedOutputElement.innerText = reversed;
+    if (reversed.length === 64) { // Treat as txid
+      const txid = reversed;
+      reversedOutputElement.innerHTML = `<a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
+    } else {
+      reversedOutputElement.innerText = reversed;
+    }
   } else {
     reversedOutputElement.innerText = `Input is not an even number of characters. (${content.length})`;
   }
