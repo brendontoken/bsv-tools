@@ -62,7 +62,7 @@ function decodeLockingScript(hex) {
     const prefixed = "00" + pkh;
     const b = bsv.encoding.Base58Check.fromHex(prefixed);
     const address = b.toString()
-    return `Address: ${address}`;
+    return `Address: <a href="https://whatsonchain.com/address/${address}" target="_blank">${address}</a>`;
   }
 
   return "";
@@ -90,7 +90,7 @@ function decodeTx(tx) {
   const txidBuf = bsv.util.buffer.reverse(txHash);
   const txid = txidBuf.toString('hex');
   console.log("txid:", txid);
-  txIdElement.innerHTML = `<a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`
+  txIdElement.innerHTML = `<a href="https://whatsonchain.com/tx/${txid}" target="_blank">${txid}</a>`;
 
   const nVersionRaw = tx.slice(0, 8);
   console.log(`${nVersionRaw}          nVersion`);
@@ -215,7 +215,9 @@ function interpretData(byteSize, hex, index) {
     return `Envelope v${version}`
   } else if (index === 1) { // Assume envelope payload protocol ID
     const s = decodeHexToString(hex);
-    return `Payload Protocol ID: ${s}`;
+    return `Payload Protocol ID: ${s}`; 
+  } else if (index === 2) {   // Assume envelope
+
   }
 }
 
