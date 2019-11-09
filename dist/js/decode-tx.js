@@ -6,7 +6,14 @@ const txInputElement = document.getElementById('tx-input');
 
 const b58ch = bsv.encoding.Base58Check;
 
-const sampleTx = "0200000002aa925d16dfaa731f8ce7b09517b443c486374b3691e1f41128d9f682c434ce87000000006a47304402201d98763aae4206f1211020fa3a3744e758425ea1c7ee80574ac10742b8f3e1c902201b340d1a33e65e4f1d14bf7ff42da070da734c80891947559ea7bc2fa67f741c41210372506b7c3e6965e959f1bba50f6df46601fc5e34f0e5ba8d50a711c9797d1ae5ffffffffb2684cf1c88febd3ba2661f71e052bcc9fa67ccc0c0cd8770ed6b0e8b898c8d80100000069463043022021ecbbc769329055377dc0df56bf1cebfdd31ef54d6a73dc759988198129d257021f4cce425635bd47ea19ffd7fa7f144ce3b1a65313f3b38b99c348cf5eb050ac4121039d675257b7ea4d3e97bab93d80050a2202dee3fb31cf9b3ca6a91d998bbb074bffffffff03e8030000000000001976a91469cd66052e7e85b4eb1d8c51efc3475bc9d5cc3c88ac000000000000000031006a02bd000e746573742e746f6b656e697a6564041a024d311712010018ec07220f0a0d547565736461792031313a353744080000000000001976a914519f1998edb2d5fa2d187bee59ac078e4a43e95088ac00000000";
+const sampleTxM1 = "0200000002aa925d16dfaa731f8ce7b09517b443c486374b3691e1f41128d9f682c434ce87000000006a47304402201d98763aae4206f1211020fa3a3744e758425ea1c7ee80574ac10742b8f3e1c902201b340d1a33e65e4f1d14bf7ff42da070da734c80891947559ea7bc2fa67f741c41210372506b7c3e6965e959f1bba50f6df46601fc5e34f0e5ba8d50a711c9797d1ae5ffffffffb2684cf1c88febd3ba2661f71e052bcc9fa67ccc0c0cd8770ed6b0e8b898c8d80100000069463043022021ecbbc769329055377dc0df56bf1cebfdd31ef54d6a73dc759988198129d257021f4cce425635bd47ea19ffd7fa7f144ce3b1a65313f3b38b99c348cf5eb050ac4121039d675257b7ea4d3e97bab93d80050a2202dee3fb31cf9b3ca6a91d998bbb074bffffffff03e8030000000000001976a91469cd66052e7e85b4eb1d8c51efc3475bc9d5cc3c88ac000000000000000031006a02bd000e746573742e746f6b656e697a6564041a024d311712010018ec07220f0a0d547565736461792031313a353744080000000000001976a914519f1998edb2d5fa2d187bee59ac078e4a43e95088ac00000000";
+const sampleTxT1 = "0100000002a6d20aa62f5c323385c3fceb30838dedd9faf4eabef8c23c782fe7353d5df81d000000006a47304402203750425479327e894570cf17512afa8257304443726b55f28453670d78148de7022053eac9bcbe8ea2d6b39e2f69607531d3c4d6199b6194ea073ddd4ea7d31b4f9c4121025aee8b104b984fe3ce1d8d32399752384573ff7779ae7c9fa34785827df8c740ffffffff4c89cf64b791760c5bf0e9bf259348a6c12a545ab475f8e83c2fc12b5d6d31dd010000006a47304402205e062ce470e73f0f7f5c34bcc35cb9febd3f298d3bcdda1c50434d2f311e9fa502201c3959677cad2d4c6707aed8e3a18d19c539369275603cb7d20ac458247c3982412102d94cf775589fc3999b844e675c1d9e827233f829feec8b4c776a5ab6dc77c01affffffff03fb070000000000001976a91447c15f74fc4a996b5cbf44b13fd40da8792b4dac88ac000000000000000081006a02bd000e746573742e746f6b656e697a6564041a0254314c660a6412034355521a208b58a577076f296ebe381beed01dac293555f8285463c440b3d0e5ea750a3e78220310b41f2a1a0a152083350a6be002e85705dade092a999e3f64d252e110ea012a1a0a15203b0e8bb470dee872800a572c69bbd0f7679c490210ca1dd1620000000000001976a914747ebce50a768e0f1f796f6649ddd016a80c761488ac00000000";
+
+const sampleTx = sampleTxT1;
+
+// Envelope
+const ENV_PUSH_DATA_INDEX_ENV_DATA = 2;
+const ENV_PUSH_DATA_INDEX_PAYLOAD = 3;
 
 // Ptotobuf
 const PB_WIRE_TYPE_LENGTH_DELIMITED = 2;
@@ -55,6 +62,90 @@ function clearDecodedResults() {
   }
 }
 
+function decodeActionPayload(actionCode, payloadHex) {
+  switch(actionCode) {
+    case "T1":
+      return decodeActionPayloadT1(payloadHex);
+    default:
+      console.log(`Action code "${actionCode}" not handled.`);
+      return [`Action code ${actionCode} not handled.`];
+  }
+
+}
+
+function decodeActionPayloadT1(payloadHex) {
+  const fieldWire0 = decodePbTag(payloadHex, true);
+  if (fieldWire0.fieldNumber === 1) {
+    return decodeAssetTransfer(fieldWire0.content)
+  }
+  console.log("AssetTransfer not found in T1.");
+  return null;
+}
+
+function decodeAssetTransfer(payloadHex) {
+  const length = payloadHex.length;
+  const payloadData = [];
+  const fields = {};
+  const fieldWire0 = decodePbTag(payloadHex, true);
+  if (fieldWire0.content) {
+    fields[fieldWire0.fieldNumber] = `${fieldWire0.content}`
+  }
+
+  let nextIndex = fieldWire0.nextIndex;
+  let nextHex = payloadHex;
+  if (nextIndex < length) {
+    nextHex = nextHex.slice(nextIndex);
+    const fieldWire1 = decodePbTag(nextHex, true);
+    if (fieldWire1.content) {
+      fields[fieldWire1.fieldNumber] = `${fieldWire1.content}`;
+    }
+    nextIndex = fieldWire1.nextIndex;
+  }
+
+  if (nextIndex < length) {
+    nextHex = nextHex.slice(nextIndex);
+    const fieldWire2 = decodePbTag(nextHex, true);
+    if (fieldWire2.content) {
+      fields[fieldWire2.fieldNumber] = `${fieldWire2.content}`;
+    }
+    nextIndex = fieldWire2.nextIndex;
+  }
+
+  if (nextIndex < length) {
+    nextHex = nextHex.slice(nextIndex);
+    const fieldWire3 = decodePbTag(nextHex, true);
+    if (fieldWire3.content) {
+      fields[fieldWire3.fieldNumber] = `${fieldWire3.content}`;
+    }
+    nextIndex = fieldWire3.nextIndex;
+  }
+
+  if (nextIndex < length) {
+    nextHex = nextHex.slice(nextIndex);
+    const fieldWire4 = decodePbTag(nextHex, true);
+    if (fieldWire4.content) {
+      fields[fieldWire4.fieldNumber] = `${fieldWire4.content}`;
+    }
+    nextIndex = fieldWire4.nextIndex;
+  }
+
+  const assetTypeHex = fields[2];
+  if (assetTypeHex) {
+    console.log("Decoding asset type from " + assetTypeHex);
+    fields[2] = "AssetType: " + decodeHexToString(assetTypeHex);
+  }
+
+  let i;
+  for (i = 0; i < 10; i++) {
+    const field = fields[i];
+    if (typeof field !== "undefined") {
+      payloadData.push(field);
+    }
+  }
+
+  return payloadData;
+}
+
 function decodeHexToString(hex) {
   const hexLen = hex.length;
   const hexLenHalf = hexLen * 0.5;
@@ -85,27 +176,44 @@ function decodeLockingScript(hex) {
   return "";
 }
 
-function decodePbTag(hex) {
+function decodePbTag(hex, hintIsBinary) {
+  hintIsBinary = typeof hintIsBinary === "undefined" ? false : hintIsBinary;
   const tagHex = hex.slice(0, 2);
   const tag = Number.parseInt(tagHex, 16);
   const wireType = tag & 0x07;
   const fieldNumber = tag >> 3;
   console.log("decodePbVarInt() wireType:", wireType, ", fieldNumber:", fieldNumber);
-  const isLengthDelimited = wireType === PB_WIRE_TYPE_LENGTH_DELIMITED;
-  if (isLengthDelimited) { // Assume bytes
-    console.log("decodePbVarInt() is length delimited.");
+  //const isLengthDelimited = wireType === PB_WIRE_TYPE_LENGTH_DELIMITED;
+  switch (wireType) {
+    case PB_WIRE_TYPE_LENGTH_DELIMITED:
     const lengthHex = hex.slice(2, 4);
     const length = Number.parseInt(lengthHex, 16);
+    console.log("decodePbVarInt() is length delimited, length:", length);
     const startOfNextData = 4 + length * 2
     const dataHex = hex.slice(4, startOfNextData);
-    // Treat as a string for now
-    const s= decodeHexToString(dataHex);
-    return [s, startOfNextData];
-  } else {
-    console.log(`wireType ${wireType} not handled.`);
+
+    let s;
+    if (hintIsBinary) {
+      s = dataHex;
+    } else {
+      // Treat as a string for now
+      s = decodeHexToString(dataHex);
+    }
+    return {
+      content: s,
+      fieldNumber, 
+      nextIndex: startOfNextData
+    };
+    default:
+      console.log(`decodePbVarInt() wireType ${wireType} not handled.`);
   }
 
-  return [null, 2];
+
+  return {
+    content: null,
+    fieldNumber, 
+    nextIndex: 2
+  }
 }
 
 
@@ -192,6 +300,7 @@ function decodeTx(tx) {
     addDecodedRow(`${lockingScriptRaw}`,`Locking script ${decodedLockingScript}`);
     cursor += lockingScriptSize * 2;
   
+    let actionCode = null;
     let or = "";
     let orCursor = 0;
     if (lockingScriptRaw.startsWith("006a")) {
@@ -218,8 +327,15 @@ function decodeTx(tx) {
   
         const pushDataRaw = lockingScriptRaw.slice(orCursor, orCursor + 2 * pushSize);
         or = or + ` ${pushDataRaw}`
-        const interpretedData = interpretData(pushSize, pushDataRaw, pushIndex);
-        addDecodedRow(`${pushDataRaw}`, `${interpretedData ? `${interpretedData}` : "Pushed data"}`, { indented: true });
+        const interpretedData = interpretData(pushSize, pushDataRaw, pushIndex, actionCode);
+        let formatted = interpretedData;
+        if (interpretData && pushIndex == ENV_PUSH_DATA_INDEX_ENV_DATA) {
+          actionCode = interpretedData;
+          formatted = `Envelope Data: "${interpretedData}"`
+        }
+
+        addDecodedRow(`${pushDataRaw}`, `${formatted ? `${formatted}` : "Pushed data"}`, { indented: true });
+        
         orCursor += pushSize * 2;
         pushIndex += 1;
       }
@@ -236,7 +352,7 @@ function decodeTx(tx) {
   addDecodedRow(`${nLockTimeRaw}`, `nLockTime: ${nLockTime}`, { showTopSeparator: true });
 }
 
-function interpretData(byteSize, hex, index) {
+function interpretData(byteSize, hex, index, actionCode) {
   if (hex.startsWith('bd') && byteSize === 2 && index === 0) {
     const versionRaw = hex.slice(2, 4);
     const version = Number.parseInt(versionRaw, 16);
@@ -244,14 +360,15 @@ function interpretData(byteSize, hex, index) {
   } else if (index === 1) { // Assume envelope Payload Protocol ID
     const s = decodeHexToString(hex);
     return `Payload Protocol ID: ${s}`; 
-  } else if (index === 2) {   // Assume envelope Envelope Data
-    const [envData, _ ] = decodePbTag(hex);
-    if (envData) {
-      return `Envelope Data: "${envData}"`
+  } else if (index === ENV_PUSH_DATA_INDEX_ENV_DATA) {   // Assume envelope Envelope Data
+    const fieldWire0 = decodePbTag(hex);
+    if (fieldWire0.content) {
+      return fieldWire0.content;
     }
-    return "Envelope Data"
-  } else if (index === 3) {  // Assume envelope Payload
-    const payloadData = [];
+    return null
+  } else if (index === ENV_PUSH_DATA_INDEX_PAYLOAD) {  // Assume envelope Payload
+    const payloadData = decodeActionPayload(actionCode, hex);
+    /*const payloadData = [];
     const [pd, nextStart] = decodePbTag(hex);
     if (pd) {
       payloadData.push(`"${pd}"`);
@@ -262,8 +379,9 @@ function interpretData(byteSize, hex, index) {
         payloadData.push(`"${pd}"`);
       }
     }
-
+    */
     return `Payload: ${payloadData.join(", ")}`
+    
   }
 }
 
