@@ -39,7 +39,7 @@ publicKeyHashInputElement.addEventListener("input", function onPublicKeyHashInpu
     const prefixed = "00" + content;
     const b = bsv.encoding.Base58Check.fromHex(prefixed);
     const addr = b.toString();
-    addressFromPublicKeyHashElement.innerText = addr;
+    addressFromPublicKeyHashElement.innerHTML = `<a href="https://whatsonchain.com/address/${addr}" target="_blank">${addr}</a>`;
   } else {
     addressFromPublicKeyHashElement.innerText = `Input is not 40 characters. (${content.length})`;
   }
