@@ -82,6 +82,24 @@ function decodeActionPayloadT1(payloadHex) {
   return null;
 }
 
+function decodeQuantityIndex(hex) {
+  // Assyme it is just thwe quantity for now.
+  const fieldWire0 = decodePbTag(hex);
+  let quantity = 0;
+  if (fieldWire0.content) {
+    fieldWire0.fieldNumber = 2;
+    quantity = fieldWire0.content;
+  } else {
+    return null;
+  }
+
+  return {
+    index: 0,
+    quantity
+  };
+
+}
+
 function decodeAssetTransfer(payloadHex) {
   const length = payloadHex.length;
   const payloadData = [];
@@ -133,6 +151,18 @@ function decodeAssetTransfer(payloadHex) {
   if (assetTypeHex) {
     console.log("Decoding asset type from " + assetTypeHex);
     fields[2] = "AssetType: " + decodeHexToString(assetTypeHex);
+  }
+
+  const assetCode = fields[3];
+  if (assetCode) {
+    fields[3] = "AssetCode: " + bsv.encoding.Base58Check.fromHex(assetCode);
+  }
+
+  const quantityIndices = fields[4];
+  if (quantityIndices) {
+    const qiHex = quantityIndices;
+    const qi = decodeQuantityIndex(qiHex);
+    fields[4] = JSON.stringify(qi);
   }
 
   let i;
@@ -216,6 +246,10 @@ function decodePbTag(hex, hintIsBinary) {
   }
 }
 
+
+function decodePbVarInt(hex) {
+
+}
 
 
 function decodeTx(tx) {
