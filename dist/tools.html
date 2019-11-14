@@ -10,17 +10,18 @@
     <h1>BSV Tools</h1>
     <div class="tool">
       <h2>Reverse Hex</h2>
-      <input id="reverse" type="text" size="50" placeholder="hex"/>
+      <input id="reverse" type="text" size="64" placeholder="hex"/>
       <p id="reversed"></p>
     </div>
     <div class="tool">
       <h2>Address from Public Key Hash (Locking Script)</h2>
-      <input id="pkhash" type="text" size="50" placeholder="hex"/>
+      <input id="pkhash" type="text" size="64" placeholder="hex"/>
+      <p id="address-interpreted" class="monospace"></p>
       <p id="address-from-pkhash"></p>
     </div>
     <div class="tool">
       <h2>Base58Check Encode</h2>
-      <input id="base58check-hex" type="text" size="50" placeholder="hex"/>
+      <input id="base58check-hex" type="text" size="64" placeholder="hex"/>
       <p id="base58check-from-hex"></p>
     </div>
     <script src="js/tools.js"></script>
