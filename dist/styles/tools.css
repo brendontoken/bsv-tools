@@ -9,3 +9,7 @@
     font-family: 'Courier New', Courier, monospace;
     font-size: 12px;
 }
+
+#xpub-from-db-hex {
+    word-break: break-all;
+}

@@ -5,6 +5,8 @@ const base58CheckFromHexOutputElement = document.getElementById('base58check-fro
 const publicKeyHashInputElement = document.getElementById('pkhash');
 const reversedOutputElement = document.getElementById('reversed');
 const reverseInputElement = document.getElementById('reverse');
+const xpubFromDbElement = document.getElementById('xpub-from-db-hex');
+const xpubFromDbInput = document.getElementById('xpub-db-hex');
 
 const b58ch = bsv.encoding.Base58Check;
 
@@ -90,3 +92,22 @@ reverseInputElement.addEventListener("input", function onReverseInput(event) {
   }
 });
 
+xpubFromDbInput.addEventListener("input", function onXpubFromDbInput(event) {
+  const content = event.target.value;
+  const VALID_LENGTH = 152;
+
+  if (content.length !== VALID_LENGTH) {
+    xpubFromDbElement.innerText = `Not ${VALID_LENGTH} characters long, is ${content.length}.`;
+    return
+  }
+
+  xpubHex = '0488B21E' + content.slice(4);
+
+  try {
+    const b = bsv.encoding.Base58Check.fromHex(xpubHex);
+    const encoded = b.toString();
+    xpubFromDbElement.innerText = encoded;
+  } catch (e) {
+    xpubFromDbElement.innerText = "Error: " + e;
+  }
+});
