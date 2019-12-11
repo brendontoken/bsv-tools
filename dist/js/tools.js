@@ -28,7 +28,7 @@ function trimQuotes(s) {
   }
 
   if (s.endsWith('"')) {
-    s = s.slice(-1);
+    s = s.slice(0, -1);
   }
 
   return s;
