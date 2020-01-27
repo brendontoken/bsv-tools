@@ -1,7 +1,9 @@
 const addressFromPublicKeyHashElement = document.getElementById('address-from-pkhash');
+const addressInputElement = document.getElementById('address-input');
 const addressInterpretedElement = document.getElementById('address-interpreted');
 const base58CheckFromHexInputElement = document.getElementById('base58check-hex');
 const base58CheckFromHexOutputElement = document.getElementById('base58check-from-hex');
+const encodedPublicKeyHashOutputElement = document.getElementById('encoded-pkhash-from-address');
 const publicKeyHashInputElement = document.getElementById('pkhash');
 const reversedOutputElement = document.getElementById('reversed');
 const reverseInputElement = document.getElementById('reverse');
@@ -35,6 +37,23 @@ function trimQuotes(s) {
 
   return s;
 }
+
+addressInputElement.addEventListener("input", function onPublicKeyHashInput(event) {
+  const content = event.target.value;
+  let trimmed = trimQuotes(content);
+
+  const buf = bsv.encoding.Base58Check.fromString(trimmed).toBuffer();
+  const str = buf.toString('hex');
+  if (str.length <= 2) {
+    encodedPublicKeyHashOutputElement.innerText = "Not long enough."
+    return;
+  }
+  const withoutPrefix = str.substring(2);
+
+  // PKH
+  const encoded = '20' + withoutPrefix;
+  encodedPublicKeyHashOutputElement.innerText = encoded;
+});
 
 base58CheckFromHexInputElement.addEventListener("input", function onBase58CheckInput(event) {
   const content = event.target.value;

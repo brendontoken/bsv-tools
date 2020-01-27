@@ -6,7 +6,7 @@
     <script src="js/bsv.min.js"></script>
   </head>
   <body>
-    <p><small><a href="tools.html">Tools Home</a> <a href="decode-tx.html">Decode Tx</a></small></p>
+    <p><small><a href="tools.html">Tools Home</a> <a href="decode-tx.html">Decode Tx</a> <a href="utxos.html">UTXOs</a> <a href="addresses.html">Addresses</a></small></p>
     <h1>BSV Tools</h1>
     <div class="tool">
       <h2>Reverse Hex</h2>
@@ -18,6 +18,11 @@
       <input id="pkhash" type="text" size="64" placeholder="hex"/>
       <p id="address-interpreted" class="monospace"></p>
       <p id="address-from-pkhash"></p>
+    </div>
+    <div class="tool">
+      <h2>Encoded Public Key Hash (Locking Script) from Address</h2>
+      <input id="address-input" type="text" size="64" placeholder="base58check"/>
+      <p id="encoded-pkhash-from-address" class="monospace"></p>
     </div>
     <div class="tool">
       <h2>Base58Check Encode</h2>
