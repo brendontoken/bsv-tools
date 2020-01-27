@@ -252,7 +252,7 @@ function decodePbVarInt(hex) {
 }
 
 
-function decodeTx(tx) {
+async function decodeTx(tx) {
   clearDecodedResults();
 
   const txBuf = bsv.util.buffer.hexToBuffer(tx);
@@ -288,6 +288,26 @@ function decodeTx(tx) {
     console.log(`${indexRaw}          index of output in previous tx: ${index}`);
     addDecodedRow(`${indexRaw}`, `Index of output in previous tx: ${index}`)
     cursor += 8;
+
+    // Address in previous tx:
+    // Value in previous tx:
+    const inputUrl = `https://api.whatsonchain.com/v1/bsv/main/tx/hash/${txid}`;
+    const response = await makeRequest('GET', inputUrl);
+    const vout = response.vout;
+    const outpoint = vout[index];
+    const bsvValue = outpoint.value;
+    const satsValue = Math.round(bsvValue * 100000000);
+    const addresses = outpoint.scriptPubKey.addresses;
+    let address = "";
+    if (addresses && addresses.length > 0) {
+      address = addresses[0]
+    }
+
+    addDecodedRow('', `Value: ${satsValue}`);
+    if (address) {
+      addDecodedRow('', `Address: ${address}`)
+    }
+    
   
     const unlockingScriptSizeRaw = tx.slice(cursor, cursor + 2);
     const unlockingScriptSize = Number.parseInt(unlockingScriptSizeRaw, 16);
@@ -417,6 +437,45 @@ function interpretData(byteSize, hex, index, actionCode) {
     return `Payload: ${payloadData.join(", ")}`
     
   }
+}
+
+
+function makeRequest(method, url) {
+  return new Promise(function (resolve, reject) {
+      let xhr = new XMLHttpRequest();
+      xhr.open(method, url);
+      xhr.timeout = 5000;
+
+      xhr.onload = function () {
+          if (xhr.status >= 200 && xhr.status < 300) {
+            console.log("xhr.response:", xhr.responseText);
+            const parsed = JSON.parse(xhr.responseText);
+            resolve(parsed);
+          } else {
+              reject({
+                  status: xhr.status,
+                  statusText: xhr.statusText
+              });
+          }
+      };
+
+      xhr.onerror = function () {
+          reject({
+              status: xhr.status,
+              statusText: xhr.statusText
+          });
+      };
+
+      xhr.ontimeout = function onXhrTimetout() {
+        reject({
+            status: xhr.status,
+            statusText: xhr.statusText,
+            message: "Timeout"
+        });
+      };
+
+      xhr.send();
+  });
 }
 
 function reverseHex(hex) {
