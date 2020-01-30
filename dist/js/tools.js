@@ -13,12 +13,13 @@ const xpubFromDbInput = document.getElementById('xpub-db-hex');
 const b58ch = bsv.encoding.Base58Check;
 
 function reverseHex(hex) {
-  const len = hex.length;
+  const trimmed = trimQuotes(hex);
+  const len = trimmed.length;
 
   let bytes = [];
   let i;
   for(i = 0; i < len; i += 2) {
-    const byte = hex.slice(i, i + 2);
+    const byte = trimmed.slice(i, i + 2);
     bytes.push(byte);
   }
   bytes.reverse();
@@ -40,7 +41,7 @@ function trimQuotes(s) {
 
 addressInputElement.addEventListener("input", function onPublicKeyHashInput(event) {
   const content = event.target.value;
-  let trimmed = trimQuotes(content);
+  const trimmed = trimQuotes(content);
 
   const buf = bsv.encoding.Base58Check.fromString(trimmed).toBuffer();
   const str = buf.toString('hex');
