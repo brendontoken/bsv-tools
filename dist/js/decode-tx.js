@@ -3,6 +3,7 @@ const sampleButton = document.getElementById('sample');
 const txDecodedElement = document.getElementById('tx-decoded');
 const txIdElement = document.getElementById('tx-id');
 const txInputElement = document.getElementById('tx-input');
+const txSizeElement = document.getElementById('tx-size');
 
 const b58ch = bsv.encoding.Base58Check;
 
@@ -57,6 +58,7 @@ function addDecodedRow(txPortion, decoded, options) {
 
 function clearDecodedResults() {
   txIdElement.innerHTML = "";
+  txSizeElement.innerText = "";
   while (txDecodedElement.firstChild) {
     txDecodedElement.removeChild(txDecodedElement.firstChild)
   }
@@ -255,6 +257,7 @@ function decodePbVarInt(hex) {
 async function decodeTx(tx) {
   clearDecodedResults();
 
+  txSizeElement.innerText = `(${tx.length / 2} bytes)`;
   const txBuf = bsv.util.buffer.hexToBuffer(tx);
   const txHash = bsv.crypto.Hash.sha256sha256(txBuf);
   const txidBuf = bsv.util.buffer.reverse(txHash);
