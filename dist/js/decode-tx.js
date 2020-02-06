@@ -295,23 +295,30 @@ async function decodeTx(tx) {
     // Address in previous tx:
     // Value in previous tx:
     const inputUrl = `https://api.whatsonchain.com/v1/bsv/main/tx/hash/${txid}`;
-    const response = await makeRequest('GET', inputUrl);
-    const vout = response.vout;
-    const outpoint = vout[index];
-    const bsvValue = outpoint.value;
-    const satsValue = Math.round(bsvValue * 100000000);
-    const addresses = outpoint.scriptPubKey.addresses;
-    let address = "";
-    if (addresses && addresses.length > 0) {
-      address = addresses[0]
+    let response;
+    try {
+      response = await makeRequest('GET', inputUrl);
+    } catch (e) {
+      console.log(`Failed to get tx details for ${txid}.`, e);
     }
 
-    addDecodedRow('', `Value: ${satsValue}`);
-    if (address) {
-      addDecodedRow('', `Address: ${address}`)
+    if (response) {
+      const vout = response.vout;
+      const outpoint = vout[index];
+      const bsvValue = outpoint.value;
+      const satsValue = Math.round(bsvValue * 100000000);
+      const addresses = outpoint.scriptPubKey.addresses;
+      let address = "";
+      if (addresses && addresses.length > 0) {
+        address = addresses[0]
+      }
+
+      addDecodedRow('', `Value: ${satsValue}`);
+      if (address) {
+        addDecodedRow('', `Address: ${address}`)
+      }
     }
-    
-  
+
     const unlockingScriptSizeRaw = tx.slice(cursor, cursor + 2);
     const unlockingScriptSize = Number.parseInt(unlockingScriptSizeRaw, 16);
     console.log(`${unlockingScriptSizeRaw}                unlocking script size: ${unlockingScriptSize}`);
@@ -345,11 +352,12 @@ async function decodeTx(tx) {
     addDecodedRow(`${nValueRaw}`, `nValue: ${nValue}`)
     cursor += 16;
   
-    const lockingScriptSizeRaw = tx.slice(cursor, cursor + 2);
-    const lockingScriptSize = Number.parseInt(lockingScriptSizeRaw, 16);
+    const lockingScriptSizeInfo = decodeVarInt(tx, cursor);
+    const lockingScriptSizeRaw = lockingScriptSizeInfo.raw;
+    const lockingScriptSize = lockingScriptSizeInfo.value;
     console.log(`${lockingScriptSizeRaw}                locking script size: ${lockingScriptSize}`);
     addDecodedRow(`${lockingScriptSizeRaw}`,`Locking script size: ${lockingScriptSize}`);
-    cursor += 2;
+    cursor = lockingScriptSizeInfo.nextIndex;
   
     const lockingScriptRaw = tx.slice(cursor, cursor + lockingScriptSize * 2);
     const decodedLockingScript = decodeLockingScript(lockingScriptRaw);
@@ -407,6 +415,46 @@ async function decodeTx(tx) {
   const nLockTime = Number.parseInt(nLockTimeReversed, 16);
   console.log(`${nLockTimeRaw}          nLockTime: ${nLockTime}`);
   addDecodedRow(`${nLockTimeRaw}`, `nLockTime: ${nLockTime}`, { showTopSeparator: true });
+}
+
+// Return { value, raw, nextIndex }
+function decodeVarInt(bytes, startIndex) {
+  let nextIndex = startIndex + 2;
+  const byte0Hex = bytes.slice(startIndex, nextIndex);
+  const byte0 = Number.parseInt(byte0Hex, 16);
+
+  let numHex = byte0Hex;
+  let value;
+  let raw = byte0Hex;
+  
+  switch (byte0) {
+    case 0xfd:
+      nextIndex = startIndex + 6;
+      numHex = bytes.slice(startIndex + 2, nextIndex);
+    break;
+
+    case 0xfe:
+      nextIndex = startIndex + 10;
+      numHex = bytes.slice(startIndex + 2, nextIndex);
+    break;
+
+    case 0xff:
+      nextIndex = startIndex + 18;
+      numHex = bytes.slice(startIndex + 2, nextIndex);
+    break;
+  }
+
+  console.log("decodeVarInt() numHex:", numHex);
+  value = Number.parseInt(reverseHex(numHex), 16);
+  if (value >= 0xfd) {
+    raw = `${byte0Hex}${numHex}`;
+  }
+
+  return {
+    value,
+    raw,
+    nextIndex
+  }
 }
 
 function interpretData(byteSize, hex, index, actionCode) {
