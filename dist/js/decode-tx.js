@@ -66,6 +66,8 @@ function clearDecodedResults() {
 
 function decodeActionPayload(actionCode, payloadHex) {
   switch(actionCode) {
+    case "M1":
+      return decodeActionPayloadM1(payloadHex);
     case "T1":
       return decodeActionPayloadT1(payloadHex);
     default:
@@ -75,8 +77,29 @@ function decodeActionPayload(actionCode, payloadHex) {
 
 }
 
+
+/*
+ontent: s,
+      fieldNumber, 
+      nextIndex: startOfNextData
+*/
+function decodeActionPayloadM1(payloadHex) {
+  let nextIndex = 0
+  while (nextIndex < payloadHex.length) {
+    
+    const fieldWire0 = decodePbTag(payloadHex, nextIndex, true);
+    nextIndex = fieldWire0.nextIndex;
+    console.log(`decodeActionPayloadM1() nextIndex: ${nextIndex} after field ${fieldWire0.fieldNumber}`);
+    // if (fieldWire0.fieldNumber === 1) {
+    //  return decodeAssetTransfer(fieldWire0.content)
+    //}
+    //console.log("AssetTransfer not found in T1.");
+  }
+  return ["Some sort of M1"];
+}
+
 function decodeActionPayloadT1(payloadHex) {
-  const fieldWire0 = decodePbTag(payloadHex, true);
+  const fieldWire0 = decodePbTag(payloadHex, 0, true);
   if (fieldWire0.fieldNumber === 1) {
     return decodeAssetTransfer(fieldWire0.content)
   }
@@ -208,9 +231,9 @@ function decodeLockingScript(hex) {
   return "";
 }
 
-function decodePbTag(hex, hintIsBinary) {
+function decodePbTag(hex, startIndex, hintIsBinary) {
   hintIsBinary = typeof hintIsBinary === "undefined" ? false : hintIsBinary;
-  const tagHex = hex.slice(0, 2);
+  const tagHex = hex.slice(startIndex, startIndex + 2);
   const tag = Number.parseInt(tagHex, 16);
   const wireType = tag & 0x07;
   const fieldNumber = tag >> 3;
@@ -218,11 +241,11 @@ function decodePbTag(hex, hintIsBinary) {
   //const isLengthDelimited = wireType === PB_WIRE_TYPE_LENGTH_DELIMITED;
   switch (wireType) {
     case PB_WIRE_TYPE_LENGTH_DELIMITED:
-    const lengthHex = hex.slice(2, 4);
+    const lengthHex = hex.slice(startIndex + 2, startIndex + 4);
     const length = Number.parseInt(lengthHex, 16);
     console.log("decodePbVarInt() is length delimited, length:", length);
-    const startOfNextData = 4 + length * 2
-    const dataHex = hex.slice(4, startOfNextData);
+    const startOfNextData = startIndex + 4 + length * 2
+    const dataHex = hex.slice(startIndex + 4, startOfNextData);
 
     let s;
     if (hintIsBinary) {
@@ -244,13 +267,25 @@ function decodePbTag(hex, hintIsBinary) {
   return {
     content: null,
     fieldNumber, 
-    nextIndex: 2
+    nextIndex: startIndex + 2
   }
 }
 
 
-function decodePbVarInt(hex) {
+// Return { value, nextIndex }
+function decodePbVarInt(hex, startIndex) {
+  const bytes = [];
 
+  let endFound = false;
+  let i = startIndex;
+  do {
+    const byteHex = hex.slice(i, i + 2);
+    const byteNum = Number.parseInt(byteHex, 16);
+    bytes.push(byteNum && 0x7f);
+    endFound = (byteNum & 0x80) == 0;
+  } while (!endFound)
+
+  console.log("Bytes for VarInt: ", bytes.length);
 }
 
 
@@ -340,6 +375,7 @@ async function decodeTx(tx) {
   const voutRaw = tx.slice(cursor, cursor + 2);
   const vout = Number.parseInt(voutRaw, 16);
   console.log(`${voutRaw}                vout (# outputs: ${vout})`);
+  addDecodedRow(`${voutRaw}`, `vout (# outputs: ${vout})`, { showTopSeparator: true })
   cursor += 2;
   
   for (i = 0; i < vout; i++) {
@@ -466,7 +502,7 @@ function interpretData(byteSize, hex, index, actionCode) {
     const s = decodeHexToString(hex);
     return `Payload Protocol ID: ${s}`; 
   } else if (index === ENV_PUSH_DATA_INDEX_ENV_DATA) {   // Assume envelope Envelope Data
-    const fieldWire0 = decodePbTag(hex);
+    const fieldWire0 = decodePbTag(hex, 0);
     if (fieldWire0.content) {
       return fieldWire0.content;
     }
