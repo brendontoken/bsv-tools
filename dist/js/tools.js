@@ -1,9 +1,12 @@
+"use strict";
 const addressFromPublicKeyHashElement = document.getElementById('address-from-pkhash');
 const addressInputElement = document.getElementById('address-input');
 const addressInterpretedElement = document.getElementById('address-interpreted');
 const base58CheckFromHexInputElement = document.getElementById('base58check-hex');
 const base58CheckFromHexOutputElement = document.getElementById('base58check-from-hex');
+const base58CheckInputElement = document.getElementById('base58check');
 const encodedPublicKeyHashOutputElement = document.getElementById('encoded-pkhash-from-address');
+const hexFromBase58CheckOutputElement = document.getElementById('hex-from-base58check');
 const publicKeyHashInputElement = document.getElementById('pkhash');
 const reversedOutputElement = document.getElementById('reversed');
 const reverseInputElement = document.getElementById('reverse');
@@ -64,6 +67,17 @@ base58CheckFromHexInputElement.addEventListener("input", function onBase58CheckI
     base58CheckFromHexOutputElement.innerText = encoded;
   } catch (e) {
     base58CheckFromHexOutputElement.innerText = "Error: " + e;
+  }
+});
+
+base58CheckInputElement.addEventListener("input", function onBase58CheckDecodeInput(event) {
+  const content = event.target.value;
+  try {
+    const buf = bsv.encoding.Base58Check.fromHex(content);
+    const decoded = buf.toHex();
+    hexFromBase58CheckOutputElement.innerText = decoded;
+  } catch (e) {
+    hexFromBase58CheckOutputElement.innerText = "Error: " + e;
   }
 });
 
